@@ -1,0 +1,56 @@
+SELECT  DISTINCT p.prot_name,e.accession 
+FROM protein_names p, entrie e, comments c, prot_name_2_prot pn
+WHERE p.name_kind = 'recommendedName' 
+AND c.accession = e.accession 
+AND e.accesion = pn.accession 
+AND pn.prot_name_id = p.prot_name_id 
+AND c.txt_c LIKE '%cardiac%';
+
+SELECT DISTINCT p.prot_name
+FROM protein_names p, entries e, keywords k, prot_name_2_prot pn, entries_2_keywords ek  
+WHERE p.name_kind = 'recommendedName' 
+AND e.accesion = pn.accession 
+AND pn.prot_name_id = p.prot_name_id 
+AND e.accession = ek.accession 
+AND ek.kw_id = k.kw_id
+AND k.kw_label = 'Long QT Syndrome';
+
+SELECT e.accession
+FROM entries e, proteins p
+WHERE p.accession = e.accession 
+AND p.seqLength = (SELECT MAX(seqLength) FROM proteins );
+
+SELECT accession ,COUNT(eg.gene_name_id)
+FROM  gene_names g, entry_2_gene_name eg
+WHERE eg.gene_name_id = g.gene_name_id
+GROUP BY eg.accession 
+HAVING COUNT(eg.gene_name_id)>2;
+
+SELECT DISTINCT e.accession, p.prot_name, p.name_kind
+FROM entries e, protein_names p, prot_name_2_prot pn
+WHERE e.accession = pn.accession 
+AND pn.prot_name_id = p.prot_name_id
+AND p.prot_name LIKE '%channel%';
+
+SELECT DISTINCT e.accession, DISTINCT prot_name 
+FROM entries e, protein_names p, keywords k, prot_name_2_prot pn, entries_2_keywords ek
+WHERE e.accesion = pn.accession 
+AND pn.prot_name_id = p.prot_name_id
+AND e.accession = ek.accession 
+AND ek.kw_id = k.kw_id 
+AND k.kw_label = 'Long QT Syndrome'
+AND p.name_kind = 'recommendedName'
+AND e.accession IN( SELECT DISTINCT accession 
+					FROM entries_2_keywords enkey, keywords key
+					WHERE enkey.kw_id = key.kw_id
+					AND key.kw_label='Short QT syndrome'
+			);
+
+SELECT DISTINCT DB1.accession, DB1.db_type, DB1.db_ref 
+FROM dbRef DB1, dbRef DB2, entries e, keywords K, entries_2_keywords LK
+WHERE e.accession = DB1.accession  
+AND e.accession = DB2.accession 
+AND e.accession = LK.accession 
+AND LK.kw_id = K.kw_id 
+AND K.kw_label = 'Long QT Syndrome' 
+AND (LK1.bd_type != LK2.bd_type OR LK1.bd_ref != LK2.bd_ref);
